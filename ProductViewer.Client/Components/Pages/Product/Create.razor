@@ -1,0 +1,73 @@
+﻿@page "/product/create"
+@using ProductViewer.Client.Common
+@using System.Net.Http.Headers
+@using System.Text
+@rendermode InteractiveServer
+
+<div class="row">
+    <div class="col-md-4"></div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Create product</h5>
+            </div>
+            <div class="card-body">
+                <input type="text" class="form-control" placeholder="Title" @bind="_title" /> <br />
+                <textarea class="form-control" rows="5" placeholder="Description" @bind="_description"></textarea> <br />
+                <input type="text" class="form-control" placeholder="Price" @bind="_price" /> <br />
+                <input type="text" class="form-control" placeholder="Rate" @bind="_rate" /> <br />
+                <input type="text" class="form-control" placeholder="Count" @bind="_count" /> <br />
+                
+                <InputFile OnChange="OnFileSelected" class="form-control" />
+            </div>
+            <div class="card-footer">
+                <input type="button" class="btn btn-success float-end" value="Create" @onclick="OnCreateHandler" />
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4"></div>
+</div>
+
+@code {
+    private HttpClient _httpClient = new HttpClient();
+    private string _title = string.Empty;
+    private string _description = string.Empty;
+    private float _price;
+    private float _rate;
+    private float _count;
+    private IBrowserFile _image = null;
+
+    private async Task OnFileSelected(InputFileChangeEventArgs e) => _image = e.File;
+
+    private async Task OnCreateHandler(MouseEventArgs e)
+    {
+        MultipartFormDataContent formData = BuilHttpFormContent();
+        await SendRequest(formData);
+    }
+
+    private MultipartFormDataContent BuilHttpFormContent()
+    {
+        StreamContent streamContent = new StreamContent(_image.OpenReadStream(Constants.MAX_ALLOWED_FILE_SIZE_MB));
+        streamContent.Headers.ContentType = new MediaTypeHeaderValue(_image.ContentType);
+
+        MultipartFormDataContent formData = new MultipartFormDataContent();
+
+        formData.Add(streamContent, "Image", _image.Name);
+        formData.Add(new StringContent(_title, Encoding.UTF8), "Title");
+        formData.Add(new StringContent(_description, Encoding.UTF8), "Description");
+        formData.Add(new StringContent(_price.ToString(), Encoding.UTF8), "Price");
+        formData.Add(new StringContent(_rate.ToString(), Encoding.UTF8), "Rate");
+        formData.Add(new StringContent(_count.ToString(), Encoding.UTF8), "Count");
+
+        return formData;
+    }
+
+    private async Task SendRequest(MultipartFormDataContent formData)
+    {
+        HttpResponseMessage response = await _httpClient.PostAsync("https://localhost:7294/api/product/create", formData);
+        if (response.IsSuccessStatusCode)
+        {
+            
+        }
+    }
+}
