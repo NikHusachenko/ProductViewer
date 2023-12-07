@@ -1,0 +1,29 @@
+﻿@using ProductViewer.Client.Models.Product
+
+<div>
+    <img style="width: 100%; border: 1px solid gray; border-radius: 15px; margin-bottom: 10px" src="https://localhost:7294/images/product/@Model.ImageName.@Model.ImageExtension" />
+    <label>@Model.Title</label>
+    <br />
+    <div>
+        <p>@Model.Description</p>
+    </div>
+    <div class="row">
+        <div class="col-md-4 text-center">
+            Price: @Model.Price
+        </div>
+        <div class="col-md-4 text-center">
+            Count: @Model.Count
+        </div>
+        <div class="col-md-4 text-center">
+            Rate: @Model.Rate
+        </div>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter]
+    public View ParentComponent { get; set; }
+
+    [Parameter]
+    public ProductViewModel Model { get; set; }
+}

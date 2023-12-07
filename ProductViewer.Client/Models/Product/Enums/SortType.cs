@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 
-namespace ProductViewer.Services.ProductService.Models.Query
+namespace ProductViewer.Client.Models.Product.Enums
 {
     public enum SortType
     {
@@ -25,7 +25,7 @@ namespace ProductViewer.Services.ProductService.Models.Query
             Type type = typeof(SortType);
             FieldInfo field = type.GetField(sortType.ToString());
 
-            if (field  == null)
+            if (field == null)
             {
                 return null;
             }
@@ -36,11 +36,6 @@ namespace ProductViewer.Services.ProductService.Models.Query
 
         public static SortType? GetStringAsEnum(string sortType)
         {
-            if (string.IsNullOrEmpty(sortType))
-            {
-                return null;
-            }
-
             switch (sortType.ToLower())
             {
                 case "id": return SortType.Id;
@@ -49,6 +44,29 @@ namespace ProductViewer.Services.ProductService.Models.Query
                 case "count": return SortType.Count;
                 default: return null;
             }
+        }
+
+        public static string[] GetFields()
+        {
+            Type type = typeof(SortType);
+            FieldInfo[] fields = type.GetFields();
+            string[] fieldNames = new string[fields.Length];
+
+            for (int i = 0; i < fields.Length; i++)
+            {
+                DisplayAttribute attr = fields[i].GetCustomAttribute<DisplayAttribute>();
+
+                if (attr == null)
+                {
+                    fieldNames[i] = string.Empty;
+                }
+                else
+                {
+                    fieldNames[i] = attr.Name;
+                }
+            }
+
+            return fieldNames;
         }
     }
 }

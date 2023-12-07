@@ -3,21 +3,21 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34309.116
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProductViewer.API", "ProductViewer.API\ProductViewer.API.csproj", "{6A272CB2-702A-418E-9A4B-2F3474E8EFFF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProductViewer.API", "ProductViewer.API\ProductViewer.API.csproj", "{6A272CB2-702A-418E-9A4B-2F3474E8EFFF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProductViewer.Database", "ProductViewer.Database\ProductViewer.Database.csproj", "{8F93F77E-38A4-4176-BA16-D68C13E50A17}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProductViewer.Database", "ProductViewer.Database\ProductViewer.Database.csproj", "{8F93F77E-38A4-4176-BA16-D68C13E50A17}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProductViewer.EntityFramework", "ProductViewer.EntityFramework\ProductViewer.EntityFramework.csproj", "{EDC23091-A11E-4C44-B962-378B35684B4E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProductViewer.EntityFramework", "ProductViewer.EntityFramework\ProductViewer.EntityFramework.csproj", "{EDC23091-A11E-4C44-B962-378B35684B4E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProductViewer.DataAccess", "ProductViewer.DataAccess\ProductViewer.DataAccess.csproj", "{F811F4FA-CB6D-4B34-B118-E4C3BC7179CD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProductViewer.DataAccess", "ProductViewer.DataAccess\ProductViewer.DataAccess.csproj", "{F811F4FA-CB6D-4B34-B118-E4C3BC7179CD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProductViewer.Services", "ProductViewer.Services\ProductViewer.Services.csproj", "{7BD5453A-B50A-4680-B8C5-B9D301E3ADEE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProductViewer.Services", "ProductViewer.Services\ProductViewer.Services.csproj", "{7BD5453A-B50A-4680-B8C5-B9D301E3ADEE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProductViewer.Common", "ProductViewer.Common\ProductViewer.Common.csproj", "{97351BBA-BE03-45B6-A7EE-0DB55F0E8189}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProductViewer.Common", "ProductViewer.Common\ProductViewer.Common.csproj", "{97351BBA-BE03-45B6-A7EE-0DB55F0E8189}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProductViewer.Client", "ProductViewer.Client\ProductViewer.Client.csproj", "{538E5069-BD44-4C79-BC51-3AC6CDABCA99}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProductViewer.Client", "ProductViewer.Client\ProductViewer.Client.csproj", "{538E5069-BD44-4C79-BC51-3AC6CDABCA99}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProductViewer.Client.Common", "ProductViewer.Client.Common\ProductViewer.Client.Common.csproj", "{4950F60E-40FE-47F5-B630-881CB085B212}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProductViewer.Client.Common", "ProductViewer.Client.Common\ProductViewer.Client.Common.csproj", "{4950F60E-40FE-47F5-B630-881CB085B212}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

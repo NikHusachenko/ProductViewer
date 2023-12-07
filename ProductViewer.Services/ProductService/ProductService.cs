@@ -6,7 +6,6 @@ using ProductViewer.Database.Entities;
 using ProductViewer.Services.ProductService.Models;
 using ProductViewer.Services.ProductService.Models.Query;
 using ProductViewer.Services.Response;
-using System.ComponentModel;
 
 namespace ProductViewer.Services.ProductService
 {
@@ -15,7 +14,7 @@ namespace ProductViewer.Services.ProductService
         private readonly IGenericRepository<ProductEntity> _productRepository;
         private readonly string _rootPath;
 
-        public ProductService(IGenericRepository<ProductEntity> productRepository, 
+        public ProductService(IGenericRepository<ProductEntity> productRepository,
             IHostingEnvironment hostingEnvironment)
         {
             _productRepository = productRepository;
@@ -139,51 +138,67 @@ namespace ProductViewer.Services.ProductService
 
         public async Task<ProductOrderingHttpGetModel> GetAll(ProductOrderingQueryModel vm)
         {
-            string query = $"SELECT * FROM {DbTables.PRODUCT_TABLE_NAME} WHERE Price >= @MinimalPrice AND Price <= @MaximumPrice AND Rate >= @MinimalRate ";
-            
+            string query = $"SELECT * FROM {DbTables.PRODUCT_TABLE_NAME} WHERE Rate >= @MinimalRate AND Price >= @MinimalPrice ";
+            if (vm.MaximumPrice > vm.MinimalPrice)
+            {
+                query += "AND Price <= @MaximumPrice ";
+            }
+
             if (vm.IsAvailable)
             {
                 query += "AND Count > 0 ";
             }
 
-            if (vm.Type != 0)
+            query += "ORDER BY ";
+            switch (SortTypeDisplay.GetStringAsEnum(vm.Type))
             {
-                query += "ORDER BY ";
-                switch (vm.Type)
-                {
-                    case SortType.Count:
-                        {
-                            query += "Price ";
-                            break;
-                        }
-                    case SortType.Id:
-                        {
-                            query += "Id ";
-                            break;
-                        }
-                    case SortType.Price:
-                        {
-                            query += "Price ";
-                            break;
-                        }
-                    case SortType.Rate:
-                        {
-                            query += "Rate ";
-                            break;
-                        }
-                    default:
-                        {
-                            break;
-                        }
-                }
+                case SortType.Count:
+                    {
+                        query += "Price ";
+                        break;
+                    }
+                case SortType.Id:
+                    {
+                        query += "Id ";
+                        break;
+                    }
+                case SortType.Price:
+                    {
+                        query += "Price ";
+                        break;
+                    }
+                case SortType.Rate:
+                    {
+                        query += "Rate ";
+                        break;
+                    }
+                default:
+                    {
+                        query += "Id ";
+                        break;
+                    }
             }
 
-            if (vm.Direction == SortDirection.Descending)
+            if (SortDirectionDisplay.GetStringAsEnum(vm.Direction) == SortDirection.Descending)
             {
                 query += "DESC ";
             }
 
-            IEnumerable<ProductEntity> products = await _productRepository.GetAll(query, vm);
+            int skip = DataPagination.CalSkipRecords(vm.Page, DataPagination.PRODUCTS_ON_PAGE);
+            query += "OFFSET @skip ROWS FETCH NEXT @take ROWS ONLY";
+
+            IEnumerable<ProductEntity> products = await _productRepository.GetAll(query, new
+            {
+                Page = vm.Page,
+                MinimalPrice = vm.MinimalPrice,
+                MaximumPrice = vm.MaximumPrice,
+                MinimalRate = vm.MinimalRate,
+                IsAvailable = vm.IsAvailable,
+                Type = vm.Type,
+                Direction = vm.Direction,
+                skip = skip,
+                take = DataPagination.PRODUCTS_ON_PAGE,
+            });
 
             return new ProductOrderingHttpGetModel()
             {

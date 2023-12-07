@@ -1,0 +1,147 @@
+﻿@page "/product/view"
+@using Newtonsoft.Json
+@using ProductViewer.Client.Models.Product
+@using ProductViewer.Client.Models.Product.Enums
+@inject IJSRuntime JSRuntime
+@rendermode InteractiveServer
+
+<div class="row">
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-header">
+                Filters
+            </div>
+            <div class="card-body">
+                <label>Minimum price</label>
+                <input type="number" class="form-control" min="0" @bind="vm.Order.MinimalPrice" />
+                <br />
+
+                <label>Maximum price</label>
+                <input type="number" class="form-control" min="0" @bind="vm.Order.MaximumPrice" />
+                <br />
+
+                <label>Minimum Rate</label>
+                <select class="form-control" @bind="vm.Order.MinimalRate">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                </select>
+                <br />
+
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" @bind="vm.Order.IsAvailable">
+                    <label class="form-check-label" for="flexCheckDefault">
+                        Is alailable
+                    </label>
+                </div>
+                <br />
+
+                <label>Order type</label>
+                <select class="form-control" @bind="vm.Order.Type">
+                    @foreach (string type in SortTypeDisplay.GetFields())
+                    {
+                        <option value="@type">@type</option>
+                    }
+                </select>
+                <br />
+
+                <label>Order by</label>
+                <select class="form-control" @bind="vm.Order.Direction">
+                    @foreach (string direction in SortDirectionDisplay.DetFields())
+                    {
+                        <option value="@direction">@direction</option>
+                    }
+                </select>
+                <br />
+
+                <input type="button" class="btn btn-success float-end" value="Apply" @onclick="OnFiltersApply" />
+            </div>
+        </div>
+    </div>
+    <div class="col-md-9">
+        <div class="card">
+            <div class="card-header">
+                Products
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    @if (vm.Products != null)
+                    {
+                        @foreach (ProductViewModel model in vm.Products)
+                        {
+                            <div class="col-md-3" style="margin-bottom: 10px; border-radius: 5px; background-color: lightgoldenrodyellow; padding: 5px;" dropzone="move" draggable="true" ondragover="event.preventDefault()">
+                                <Product Model="model" />
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private ProductResponseModel vm = new ProductResponseModel();
+    private HttpClient _httpClient = new HttpClient();
+
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await CreateIfNotExistsFilterParams();
+            await InitProducts();
+            StateHasChanged();
+        }
+    }
+
+    private async Task InitProducts()
+    {
+        string parameters = BuildQueryParams();
+        HttpResponseMessage response = await _httpClient.GetAsync($"https://localhost:7294/Producs?{parameters}");
+        if (!response.IsSuccessStatusCode)
+        {
+            return;
+        }
+
+        string jsonResponse = await response.Content.ReadAsStringAsync();
+        vm = JsonConvert.DeserializeObject<ProductResponseModel>(jsonResponse);
+    }
+
+    private string BuildQueryParams()
+    {
+        return $"Page={vm.Order.Page}&MinimalPrice={vm.Order.MinimalPrice}&MaximumPrice={vm.Order.MaximumPrice}&MinimalRate={vm.Order.MinimalRate}&IsAvailable={vm.Order.IsAvailable}&Type={vm.Order.Type}&Direction={vm.Order.Direction}";
+    }
+
+    private async Task CreateIfNotExistsFilterParams()
+    {
+        var order = await GetFilterParams();
+        if (order == null)
+        {
+            await SaveParams();
+        }
+        else
+        {
+            vm.Order = order;
+        }
+    }
+
+    private async Task SaveParams()
+        => await JSRuntime.InvokeVoidAsync("localStorage.setItem", "queryParams", JsonConvert.SerializeObject(vm.Order));
+
+    private async Task<ProductOrderModel?> GetFilterParams()
+    {
+        string orderJson = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "queryParams");
+        return JsonConvert.DeserializeObject<ProductOrderModel>(orderJson);
+    }
+
+    private async Task OnFiltersApply(MouseEventArgs e)
+    {
+        if (e.Button == 0)
+        {
+            await InitProducts();
+            await SaveParams();
+        }
+    }
+}

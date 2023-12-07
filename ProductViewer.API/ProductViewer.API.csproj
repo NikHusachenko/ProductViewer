@@ -11,6 +11,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
   </ItemGroup>
 
@@ -19,6 +20,10 @@
     <ProjectReference Include="..\ProductViewer.Database\ProductViewer.Database.csproj" />
     <ProjectReference Include="..\ProductViewer.EntityFramework\ProductViewer.EntityFramework.csproj" />
     <ProjectReference Include="..\ProductViewer.Services\ProductViewer.Services.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\" />
   </ItemGroup>
 
 </Project>

@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 
-namespace ProductViewer.Services.ProductService.Models.Query
+namespace ProductViewer.Client.Models.Product.Enums
 {
     public enum SortDirection
     {
@@ -25,7 +25,11 @@ namespace ProductViewer.Services.ProductService.Models.Query
             }
 
             DisplayAttribute attr = field.GetCustomAttribute<DisplayAttribute>();
-            return attr?.Name;
+            if (attr == null)
+            {
+                return null;
+            }
+            return attr.Name;
         }
 
         public static SortDirection? GetStringAsEnum(string direction)
@@ -41,6 +45,27 @@ namespace ProductViewer.Services.ProductService.Models.Query
                 case "descending": return SortDirection.Descending;
                 default: return null;
             }
+        }
+
+        public static string[] DetFields()
+        {
+            FieldInfo[] fields = typeof(SortDirection).GetFields();
+            string[] fieldNames = new string[fields.Length];
+            
+            for (int i = 0; i < fieldNames.Length; i++)
+            {
+                DisplayAttribute attr = fields[i].GetCustomAttribute<DisplayAttribute>();
+                if (attr == null)
+                {
+                    fieldNames[i] = string.Empty;
+                }
+                else
+                {
+                    fieldNames[i] = attr.Name;
+                }
+            }
+
+            return fieldNames;
         }
     }
 }

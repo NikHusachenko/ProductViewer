@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using ProductViewer.Services.ProductService;
 using ProductViewer.Services.ProductService.Models;
 using ProductViewer.Services.ProductService.Models.Query;
@@ -20,7 +21,7 @@ namespace ProductViewer.API.Controllers
         [Route("/[action]")]
         public async Task<IActionResult> Producs([FromQuery] ProductOrderingQueryModel vm)
         {
-            return Ok(await _productService.GetAll(vm));
+            return Ok(JsonConvert.SerializeObject(await _productService.GetAll(vm)));
         }
 
         [HttpPost]

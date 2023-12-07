@@ -16,7 +16,7 @@ namespace ProductViewer.DataAccess.Repositories
 
         public async Task Create(ProductEntity entity)
         {
-            string query = $"INSERT INTO {DbTables.PRODUCT_TABLE_NAME} (Title, Description, Price, Rate, Count, ImageName, ImageExtension) VALUES (@Title, @Description, @Price, @Rate, @Count, @ImageName, @ImageExtension); SELECT CAST(SCOPE_IDENTITY() AS BIGINT);";
+            string query = $"INSERT INTO {DbTables.PRODUCT_TABLE_NAME} ([Index], Title, Description, Price, Rate, Count, ImageName, ImageExtension) VALUES (@Index, @Title, @Description, @Price, @Rate, @Count, @ImageName, @ImageExtension); SELECT CAST(SCOPE_IDENTITY() AS BIGINT);";
             long id = await _connection.ExecuteScalarAsync<long>(query, entity);
             entity.Id = id;
         }
@@ -53,7 +53,7 @@ namespace ProductViewer.DataAccess.Repositories
 
         public async Task Update(ProductEntity entity)
         {
-            string query = $"UPDATE {DbTables.PRODUCT_TABLE_NAME} SET Title = @Title, Description = @Description, Price = @Price, Rate = @Rate, Count = @Count, ImageName = @ImageName, ImageExtension = @ImageExtension WHERE Id = @Id";
+            string query = $"UPDATE {DbTables.PRODUCT_TABLE_NAME} SET [Index] = @Index, Title = @Title, Description = @Description, Price = @Price, Rate = @Rate, Count = @Count, ImageName = @ImageName, ImageExtension = @ImageExtension WHERE Id = @Id";
             await _connection.ExecuteAsync(query, entity);
         }
     }
