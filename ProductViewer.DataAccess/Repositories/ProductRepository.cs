@@ -14,6 +14,9 @@ namespace ProductViewer.DataAccess.Repositories
             _connection = connection;
         }
 
+        public async Task<int> Count(string query, object obj)
+            => await _connection.ExecuteScalarAsync<int>(query, obj);
+
         public async Task Create(ProductEntity entity)
         {
             string query = $"INSERT INTO {DbTables.PRODUCT_TABLE_NAME} ([Index], Title, Description, Price, Rate, Count, ImageName, ImageExtension) VALUES (@Index, @Title, @Description, @Price, @Rate, @Count, @ImageName, @ImageExtension); SELECT CAST(SCOPE_IDENTITY() AS BIGINT);";
@@ -50,6 +53,9 @@ namespace ProductViewer.DataAccess.Repositories
             string query = $"SELECT * FROM {DbTables.PRODUCT_TABLE_NAME} ORDER BY Id OFFSET @skip ROWS FETCH NEXT @take ROWS ONLY";
             return await _connection.QueryAsync<ProductEntity>(query, new { skip = skip, take = take });
         }
+
+        public async Task<int> Max(string query) 
+            => await _connection.ExecuteScalarAsync<int>(query);
 
         public async Task Update(ProductEntity entity)
         {

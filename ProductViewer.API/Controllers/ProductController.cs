@@ -35,5 +35,17 @@ namespace ProductViewer.API.Controllers
             }
             return Ok(new { id = response.Value });
         }
+
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> UpdateOrder([FromBody] UpdateProductOrderHttpPostModel vm)
+        {
+            var response = await _productService.UpdateOrder(vm);
+            if (response.IsError)
+            {
+                return BadRequest(new { responseMessage = response.ErrorMessage });
+            }
+            return Ok(new { success = true });
+        }
     }
 }

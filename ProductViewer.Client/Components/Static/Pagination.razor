@@ -1,0 +1,47 @@
+﻿<div class="container">
+    <nav aria-label="Page navigation example">
+        <ul class="pagination justify-content-center">
+
+            <li class="page-item">
+                <a class="page-link" @onclick="OnFirstPageClick" style="cursor: pointer">First</a>
+            </li>
+
+            @if (PrevPage.HasValue)
+            {
+                <li class="page-item"><a class="page-link" @onclick="OnPrevPageClick" style="cursor: pointer">@PrevPage.Value</a></li>
+            }
+            <li class="page-item active"><a class="page-link" style="cursor: pointer">@CurrentPage</a></li>
+            @if (NextPage.HasValue)
+            {
+                <li class="page-item"><a class="page-link" @onclick="OnNextPageClick" style="cursor: pointer">@NextPage.Value</a></li>
+            }
+            
+            <li class="page-item">
+                <a class="page-link" @onclick="OnLastPageClick" style="cursor: pointer">Last</a>
+            </li>
+        </ul>
+    </nav>
+</div>
+
+@code {
+    [Parameter]
+    public int? PrevPage { get; set; }
+
+    [Parameter]
+    public int CurrentPage { get; set; }
+
+    [Parameter]
+    public int? NextPage { get; set; }
+
+    [Parameter]
+    public Action OnFirstPageClick { get; set; }
+
+    [Parameter]
+    public Action OnPrevPageClick { get; set; }
+
+    [Parameter]
+    public Action OnNextPageClick { get; set; }
+
+    [Parameter]
+    public Action OnLastPageClick { get; set; }
+}

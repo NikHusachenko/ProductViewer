@@ -5,8 +5,8 @@ namespace ProductViewer.Services.ProductService.Models.Query
 {
     public enum SortType
     {
-        [Display(Name = "Id")]
-        Id = 1,
+        [Display(Name = "Index")]
+        Index = 1,
 
         [Display(Name = "Price")]
         Price = 2,
@@ -43,7 +43,7 @@ namespace ProductViewer.Services.ProductService.Models.Query
 
             switch (sortType.ToLower())
             {
-                case "id": return SortType.Id;
+                case "index": return SortType.Index;
                 case "price": return SortType.Price;
                 case "rate": return SortType.Rate;
                 case "count": return SortType.Count;

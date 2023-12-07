@@ -31,6 +31,7 @@ namespace ProductViewer.Services.ProductService
 
             dbRecord = new ProductEntity()
             {
+                Index = await GetLastIndex(),
                 Description = vm.Description,
                 Title = vm.Title,
                 Count = vm.Count,
@@ -136,9 +137,57 @@ namespace ProductViewer.Services.ProductService
             return await Update(dbRecord);
         }
 
+        public async Task<ResponseService> UpdateOrder(UpdateProductOrderHttpPostModel vm)
+        {
+            ProductEntity dbRecord = await _productRepository.Find(vm.Id);
+            if (dbRecord == null)
+            {
+                return ResponseService.Error(Errors.PRODUCT_NOT_FOUND_ERROR);
+            }
+
+            dbRecord.Index = vm.Index;
+
+            return await Update(dbRecord);
+        }
+
         public async Task<ProductOrderingHttpGetModel> GetAll(ProductOrderingQueryModel vm)
         {
-            string query = $"SELECT * FROM {DbTables.PRODUCT_TABLE_NAME} WHERE Rate >= @MinimalRate AND Price >= @MinimalPrice ";
+            string query = BuildConditionQuery($"SELECT * FROM {DbTables.PRODUCT_TABLE_NAME} ", vm);
+            query = BuilOrderQuery(query, vm);
+
+            int skip = DataPagination.CalSkipRecords(vm.Page, DataPagination.PRODUCTS_ON_PAGE);
+            query += "OFFSET @skip ROWS FETCH NEXT @take ROWS ONLY";
+
+            var queryObject = new
+            {
+                Page = vm.Page,
+                MinimalPrice = vm.MinimalPrice,
+                MaximumPrice = vm.MaximumPrice,
+                MinimalRate = vm.MinimalRate,
+                IsAvailable = vm.IsAvailable,
+                Type = vm.Type,
+                Direction = vm.Direction,
+                skip = skip,
+                take = DataPagination.PRODUCTS_ON_PAGE,
+            };
+
+            string countQuery = BuildConditionQuery($"SELECT COUNT(*) FROM {DbTables.PRODUCT_TABLE_NAME} ", vm);
+            int recordCount = await _productRepository.Count(countQuery, queryObject);
+            int pageCount = (int)Math.Ceiling((float)recordCount / DataPagination.PRODUCTS_ON_PAGE);
+
+            IEnumerable<ProductEntity> products = await _productRepository.GetAll(query, queryObject);
+
+            return new ProductOrderingHttpGetModel()
+            {
+                Products = products,
+                PageCount = pageCount,
+                QueryFilters = vm,
+            };
+        }
+        
+        private string BuildConditionQuery(string query, ProductOrderingQueryModel vm)
+        {
+            query += $"WHERE Rate >= @MinimalRate AND Price >= @MinimalPrice ";
             if (vm.MaximumPrice > vm.MinimalPrice)
             {
                 query += "AND Price <= @MaximumPrice ";
@@ -149,6 +198,11 @@ namespace ProductViewer.Services.ProductService
                 query += "AND Count > 0 ";
             }
 
+            return query;
+        }
+
+        private string BuilOrderQuery(string query, ProductOrderingQueryModel vm)
+        {
             query += "ORDER BY ";
             switch (SortTypeDisplay.GetStringAsEnum(vm.Type))
             {
@@ -157,9 +211,9 @@ namespace ProductViewer.Services.ProductService
                         query += "Price ";
                         break;
                     }
-                case SortType.Id:
+                case SortType.Index:
                     {
-                        query += "Id ";
+                        query += "[Index] ";
                         break;
                     }
                 case SortType.Price:
@@ -184,27 +238,13 @@ namespace ProductViewer.Services.ProductService
                 query += "DESC ";
             }
 
-            int skip = DataPagination.CalSkipRecords(vm.Page, DataPagination.PRODUCTS_ON_PAGE);
-            query += "OFFSET @skip ROWS FETCH NEXT @take ROWS ONLY";
-
-            IEnumerable<ProductEntity> products = await _productRepository.GetAll(query, new
-            {
-                Page = vm.Page,
-                MinimalPrice = vm.MinimalPrice,
-                MaximumPrice = vm.MaximumPrice,
-                MinimalRate = vm.MinimalRate,
-                IsAvailable = vm.IsAvailable,
-                Type = vm.Type,
-                Direction = vm.Direction,
-                skip = skip,
-                take = DataPagination.PRODUCTS_ON_PAGE,
-            });
-
-            return new ProductOrderingHttpGetModel()
-            {
-                Products = products,
-                QueryFilters = vm,
-            };
+            return query;
+        }
+        
+        private async Task<int> GetLastIndex()
+        {
+            string query = $"SELECT MAX([Index]) FROM {DbTables.PRODUCT_TABLE_NAME}";
+            return await _productRepository.Max(query);
         }
 
         private async Task<ResponseService> Update(ProductEntity entity)

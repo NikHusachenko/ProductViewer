@@ -24,7 +24,7 @@
 
     public static class DataPagination
     {
-        public const int PRODUCTS_ON_PAGE = 21;
+        public const int PRODUCTS_ON_PAGE = 20;
 
         public static int CalSkipRecords(int page, int pageSize) => (page - 1) * pageSize;
     }

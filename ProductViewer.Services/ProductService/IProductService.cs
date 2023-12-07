@@ -10,6 +10,7 @@ namespace ProductViewer.Services.ProductService
         Task<ResponseService<long>> Create(CreateProductHttpPostModel vm);
         Task<ResponseService> Delete(DeleteProductHttpPostModel vm);
         Task<ResponseService> Update(UpdateProductHttpPostModel vm);
+        Task<ResponseService> UpdateOrder(UpdateProductOrderHttpPostModel vm);
 
         Task<ResponseService<ProductEntity>> GetById(long id);
         Task<IEnumerable<ProductEntity>> GetAll();

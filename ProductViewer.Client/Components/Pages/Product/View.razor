@@ -1,5 +1,7 @@
 ﻿@page "/product/view"
 @using Newtonsoft.Json
+@using ProductViewer.Client.Components.Static
+@using ProductViewer.Client.Models
 @using ProductViewer.Client.Models.Product
 @using ProductViewer.Client.Models.Product.Enums
 @inject IJSRuntime JSRuntime
@@ -71,12 +73,24 @@
                     {
                         @foreach (ProductViewModel model in vm.Products)
                         {
-                            <div class="col-md-3" style="margin-bottom: 10px; border-radius: 5px; background-color: lightgoldenrodyellow; padding: 5px;" dropzone="move" draggable="true" ondragover="event.preventDefault()">
+                            <div class="col-md-3" style="margin-bottom: 10px; border-radius: 5px; background-color: lightgoldenrodyellow; padding: 5px;" dropzone="move" draggable="true" ondragover="event.preventDefault()"
+                                @ondragstart="() => OnDragStartHandler(model)"
+                                @ondrop="async () => await OnDropHandler(model)"
+                                @ondragend="async (e) => await OnDragEndHandler(e)">
+
                                 <Product Model="model" />
                             </div>
                         }
                     }
                 </div>
+
+                <br />
+
+                <Pagination CurrentPage="vm.Order.Page" NextPage="_nextPage" PrevPage="_prevPage" 
+                    OnFirstPageClick="OnFirstPageClickHandler"
+                    OnPrevPageClick="OnPrevPageClickHandler" 
+                    OnNextPageClick="OnNextPageClickHandler"
+                    OnLastPageClick="OnLastPageClickHandler"/>
             </div>
         </div>
     </div>
@@ -85,6 +99,10 @@
 @code {
     private ProductResponseModel vm = new ProductResponseModel();
     private HttpClient _httpClient = new HttpClient();
+    private ProductViewModel _draggableModel = null;
+
+    private int? _prevPage = null;
+    private int? _nextPage = null;
 
     protected async override Task OnAfterRenderAsync(bool firstRender)
     {
@@ -107,6 +125,9 @@
 
         string jsonResponse = await response.Content.ReadAsStringAsync();
         vm = JsonConvert.DeserializeObject<ProductResponseModel>(jsonResponse);
+
+        _prevPage = vm.Order.Page > 1 ? vm.Order.Page - 1 : null;
+        _nextPage = vm.Order.Page < vm.PageCount ? vm.Order.Page + 1 : null;
     }
 
     private string BuildQueryParams()
@@ -125,6 +146,7 @@
         {
             vm.Order = order;
         }
+        vm.Order.Page = 1;
     }
 
     private async Task SaveParams()
@@ -140,8 +162,86 @@
     {
         if (e.Button == 0)
         {
+            vm.Order.Page = 1;
+
             await InitProducts();
             await SaveParams();
         }
+    }
+
+    private void OnDragStartHandler(ProductViewModel model) => _draggableModel = model;
+
+    private async Task OnDropHandler(ProductViewModel model)
+    {
+        if (_draggableModel != null)
+        {
+            if (vm.Order.Type == SortTypeDisplay.GetEnumAsString(SortType.Index))
+            {
+                SwapProducts(_draggableModel, model);
+
+                await NotifyOrderChanged(_draggableModel);
+                await NotifyOrderChanged(model);
+
+                StateHasChanged();
+            }
+        }
+    }
+
+    private async Task OnDragEndHandler(DragEventArgs e) => _draggableModel = null;
+
+    private void SwapProducts(ProductViewModel left, ProductViewModel right)
+    {
+        int tempIndex = left.Index;
+        left.Index = right.Index;
+        right.Index = tempIndex;
+
+        vm.Products[left.Index] = left;
+        vm.Products[right.Index] = right;
+    }
+
+    private async Task NotifyOrderChanged(ProductViewModel model)
+    {
+        HttpResponseMessage response = await _httpClient.PostAsJsonAsync("https://localhost:7294/api/product/UpdateOrder", new
+        {
+            Id = model.Id,
+            Index = model.Index
+        });
+
+        if (response.IsSuccessStatusCode)
+        {
+            // TODO
+        }
+    }
+
+    private async void OnFirstPageClickHandler()
+    {
+        vm.Order.Page = 1;
+        await InitProducts();
+        await SaveParams();
+        StateHasChanged();
+    }
+
+    private async void OnPrevPageClickHandler()
+    {
+        vm.Order.Page--;
+        await InitProducts();
+        await SaveParams();
+        StateHasChanged();
+    }
+
+    private async void OnNextPageClickHandler()
+    {
+        vm.Order.Page++;
+        await InitProducts();
+        await SaveParams();
+        StateHasChanged();
+    }
+
+    private async void OnLastPageClickHandler()
+    {
+        vm.Order.Page = vm.PageCount;
+        await InitProducts();
+        await SaveParams();
+        StateHasChanged();
     }
 }

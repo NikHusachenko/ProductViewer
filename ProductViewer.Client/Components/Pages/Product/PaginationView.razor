@@ -1,5 +1,132 @@
 ﻿@page "/product/PaginationView"
+@using Newtonsoft.Json
+@using ProductViewer.Client.Components.Static
+@using ProductViewer.Client.Models.Product
+@inject IJSRuntime JSRuntime
+@rendermode InteractiveServer
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                Products
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    @if (vm.Products != null)
+                    {
+                        @foreach (ProductViewModel model in vm.Products)
+                        {
+                            <div class="col-md-3" style="margin-bottom: 10px; border-radius: 5px; background-color: lightgoldenrodyellow; padding: 5px;">
+                                <Product Model="model" />
+                            </div>
+                        }
+                    }
+                </div>
+
+                <br />
+
+                <Pagination CurrentPage="vm.Order.Page" NextPage="_nextPage" PrevPage="_prevPage" 
+                    OnFirstPageClick="OnFirstPageClickHandler"
+                    OnPrevPageClick="OnPrevPageClickHandler" 
+                    OnNextPageClick="OnNextPageClickHandler"
+                    OnLastPageClick="OnLastPageClickHandler"/>
+            </div>
+        </div>
+    </div>
+</div>
 
 @code {
+    private ProductResponseModel vm = new ProductResponseModel();
+    private HttpClient _httpClient = new HttpClient();
+    private ProductViewModel _draggableModel = null;
 
+    private int? _prevPage = null;
+    private int? _nextPage = null;
+
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await CreateIfNotExistsFilterParams();
+            await InitProducts();
+            StateHasChanged();
+        }
+    }
+
+    private async Task InitProducts()
+    {
+        string parameters = BuildQueryParams();
+        HttpResponseMessage response = await _httpClient.GetAsync($"https://localhost:7294/Producs?{parameters}");
+        if (!response.IsSuccessStatusCode)
+        {
+            return;
+        }
+
+        string jsonResponse = await response.Content.ReadAsStringAsync();
+        vm = JsonConvert.DeserializeObject<ProductResponseModel>(jsonResponse);
+
+        _prevPage = vm.Order.Page > 1 ? vm.Order.Page - 1 : null;
+        _nextPage = vm.Order.Page < vm.PageCount ? vm.Order.Page + 1 : null;
+    }
+
+    private string BuildQueryParams()
+    {
+        return $"Page={vm.Order.Page}&MinimalPrice={vm.Order.MinimalPrice}&MaximumPrice={vm.Order.MaximumPrice}&MinimalRate={vm.Order.MinimalRate}&IsAvailable={vm.Order.IsAvailable}&Type={vm.Order.Type}&Direction={vm.Order.Direction}";
+    }
+
+    private async Task CreateIfNotExistsFilterParams()
+    {
+        var order = await GetFilterParams();
+        if (order == null)
+        {
+            await SaveParams();
+        }
+        else
+        {
+            vm.Order = order;
+        }
+        vm.Order.Page = 1;
+    }
+
+    private async Task SaveParams()
+        => await JSRuntime.InvokeVoidAsync("localStorage.setItem", "queryParams", JsonConvert.SerializeObject(vm.Order));
+
+    private async Task<ProductOrderModel?> GetFilterParams()
+    {
+        string orderJson = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "queryParams");
+        return JsonConvert.DeserializeObject<ProductOrderModel>(orderJson);
+    }
+
+    private async void OnFirstPageClickHandler()
+    {
+        vm.Order.Page = 1;
+        await InitProducts();
+        await SaveParams();
+        StateHasChanged();
+    }
+
+    private async void OnPrevPageClickHandler()
+    {
+        vm.Order.Page--;
+        await InitProducts();
+        await SaveParams();
+        StateHasChanged();
+    }
+
+    private async void OnNextPageClickHandler()
+    {
+        vm.Order.Page++;
+        await InitProducts();
+        await SaveParams();
+        StateHasChanged();
+    }
+
+    private async void OnLastPageClickHandler()
+    {
+        vm.Order.Page = vm.PageCount;
+        await InitProducts();
+        await SaveParams();
+        StateHasChanged();
+    }
 }

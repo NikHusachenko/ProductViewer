@@ -6,6 +6,9 @@
         Task Delete(T entity);
         Task Update(T entity);
 
+        Task<int> Count(string query, object obj);
+        Task<int> Max(string query);
+
         Task<T> Find(long id);
         Task<T> First(string query, object obj);
         Task<IEnumerable<T>> GetAll();
